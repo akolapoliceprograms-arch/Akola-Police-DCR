@@ -370,7 +370,7 @@
         let currentUser = null;
         let units = [];
         const BACKEND_PORT = '8001';
-        const BASE_URL = window.location.protocol === 'file:' ? `http://localhost:${BACKEND_PORT}` : (window.location.port === BACKEND_PORT ? '' : `${window.location.protocol}//${window.location.hostname}:${BACKEND_PORT}`);
+        const BASE_URL = window.location.protocol === 'file:' ? `http://localhost:${BACKEND_PORT}` : '';
 
         window.onload = async () => {
             const select = document.getElementById('station-list');
