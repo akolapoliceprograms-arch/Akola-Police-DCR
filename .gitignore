@@ -1,0 +1,7 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.sqlite
+*.db
+dpr_portal.db
+.env

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akola Police | DCR Intelligence Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        police: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9', // Blueish for primary actions
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0f172a', // Slate 900 for main backgrounds
+                            DEFAULT: '#0f172a'
+                        },
+                        accent: {
+                            gold: '#fbbf24',
+                            crimson: '#ef4444',
+                            slate: '#1e293b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        tech: ['Outfit', 'sans-serif'] // Outfit provides a crisp, modern geometric look for headings
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --police-deep: #0f172a;
+            --police-glow: #0ea5e9;
+        }
+        body {
+            background-color: #0f172a;
+            background-image: radial-gradient(circle at top right, rgba(30, 41, 59, 1), #0f172a);
+            color: #f8fafc;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.2);
+            border-radius: 1.5rem;
+        }
+        .glow-border {
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .glow-border:hover {
+            border-color: rgba(14, 165, 233, 0.5);
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.1);
+        }
+        .status-badge {
+            border-radius: 0.5rem;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--police-deep); }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.6; }
+        }
+        .animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
+        
+        /* Modern Input Styling */
+        input, select, textarea {
+            background: rgba(15, 23, 42, 0.8) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: #f8fafc !important;
+            border-radius: 0.75rem !important;
+            transition: all 0.2s ease;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #0ea5e9 !important;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15) !important;
+            outline: none;
+        }
+        @keyframes scale-in {
+            0% { transform: scale(0.95) translateY(10px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .animate-scale-in { animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        
+        .tab-content.hidden { display: none; }
+    </style>
+</head>
+<body class="min-h-screen text-slate-200">
+    <!-- Ambient Background Elements (Subtle professional gradients) -->
+    <div class="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
+        <div class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-sky-500/5 blur-[120px] rounded-full"></div>
+        <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/5 blur-[100px] rounded-full"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="relative z-50 border-b border-white/5 backdrop-blur-md">
+        <div class="max-w-[1600px] mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <div class="absolute -inset-1 bg-police-500 rounded-lg blur opacity-25"></div>
+                    <div class="relative bg-police-900 p-2 rounded-lg border border-white/10">
+                        <i class="fas fa-shield-halved text-police-300 text-2xl"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="font-tech text-sm tracking-wider font-bold text-white uppercase">Akola Police</h1>
+                    <p class="text-[9px] text-police-400 font-bold uppercase tracking-wider mt-1 opacity-70">Intelligence & DCR Command</p>
+                </div>
+            </div>
+            
+            <div id="nav-user" class="hidden flex items-center space-x-6">
+                <div class="text-right">
+                    <p id="nav-name" class="text-xs font-bold text-white tracking-wide"></p>
+                    <p id="nav-role" class="text-[9px] text-police-400 uppercase font-bold tracking-wider"></p>
+                </div>
+                <div class="h-8 w-[1px] bg-white/10"></div>
+                <button onclick="location.reload()" class="group relative px-4 py-2 overflow-hidden rounded-lg bg-white/5 border border-white/10 hover:border-police-500 transition-all">
+                    <span class="relative z-10 text-[10px] font-bold text-white uppercase group-hover:text-police-300">Sign Out</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login UI -->
+    <main id="login-screen" class="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-6 translate-y-[-20px]">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-tech font-bold text-white mb-2 tracking-tighter">SECURE ACCESS</h2>
+                <div class="h-1 w-12 bg-police-500 mx-auto rounded-full"></div>
+            </div>
+            
+            <div class="glass-card p-8 rounded-3xl border border-white/10">
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-[10px] font-bold text-police-300 uppercase tracking-wider mb-2">Portal Designation</label>
+                        <select id="user-type" onchange="toggleLoginInputs()" class="w-full p-4 rounded-xl text-sm font-medium">
+                            <option value="ps">POLICE STATION (STATION MASTER)</option>
+                            <option value="admin">SP OFFICE (SUPER ADMIN)</option>
+                        </select>
+                    </div>
+
+                    <div id="ps-selection">
+                        <label class="block text-[10px] font-bold text-police-300 uppercase tracking-wider mb-2">Select Station</label>
+                        <select id="station-list" class="w-full p-4 rounded-xl text-sm font-medium">
+                            <option value="" disabled selected>Loading stations...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-police-300 uppercase tracking-wider mb-2">Access Key Code</label>
+                        <input type="password" id="access-key" class="w-full p-4 rounded-xl text-sm tracking-wider" value="••••••••">
+                    </div>
+
+                    <button onclick="performAccess()" class="relative group w-full py-4 bg-police-500 text-white rounded-xl font-bold tracking-wider overflow-hidden transition-all active:scale-95 shadow-lg shadow-police-500/20">
+                        <span class="relative z-10">AUTHORIZE ACCESS</span>
+                        <div class="absolute inset-0 bg-gradient-to-r from-police-600 to-police-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    </button>
+                </div>
+            </div>
+            
+            <p class="text-[10px] text-police-500 text-center mt-8 font-bold tracking-wider uppercase opacity-40">Unauthorized access is monitored and logged</p>
+        </div>
+    </main>
+
+    <!-- Admin Command Center -->
+    <main id="admin-screen" class="hidden relative z-10 max-w-[1600px] mx-auto p-6 md:p-10 animate-fade-in">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
+            <div>
+                <h2 class="text-4xl font-tech font-bold text-white mb-2">DCR COMMAND CENTER</h2>
+                <p class="text-police-400 font-bold text-xs tracking-wider uppercase">Live Monitoring • 24 Active Sub-Divisions</p>
+            </div>
+            <div class="flex flex-wrap gap-4">
+                <div class="glass-card px-6 py-3 rounded-2xl border-police-500/20 flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                    <span class="text-[10px] font-bold tracking-wider text-police-200 uppercase">System Online</span>
+                </div>
+                <button onclick="downloadAllReports()" class="bg-white/5 border border-white/10 hover:border-police-500 px-6 py-3 rounded-2xl text-[10px] font-bold tracking-wider uppercase flex items-center space-x-2 transition-all">
+                    <i class="fas fa-file-export text-police-400"></i>
+                    <span>Export DCR Bundle</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="command-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Dynamic Grid Items -->
+        </div>
+    </main>
+
+    <!-- Report Detail Modal -->
+    <div id="report-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6">
+        <div class="absolute inset-0 bg-police-900/80 backdrop-blur-xl" onclick="closeModal()"></div>
+        <div class="relative glass-card w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-[2.5rem] border-white/10 shadow-2xl animate-scale-in">
+            <div class="sticky top-0 bg-[#0f172a]/90 backdrop-blur-md px-8 py-6 border-b border-white/5 flex justify-between items-center z-10">
+                <div>
+                    <h3 id="modal-station-name" class="text-2xl font-tech font-bold text-white tracking-tight">STATION NAME</h3>
+                    <p id="modal-meta" class="text-police-400 text-[10px] font-bold uppercase tracking-wider mt-1"></p>
+                </div>
+                <button onclick="closeModal()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-white transition-all">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div id="modal-content" class="p-8 space-y-10">
+                <!-- Content populated via JS -->
+            </div>
+            
+            <div class="p-8 border-t border-white/5 flex justify-end">
+                <button onclick="closeModal()" class="px-8 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all">
+                    Close Intelligence Feed
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PS Submission Portal -->
+    <main id="ps-screen" class="hidden relative z-10 max-w-4xl mx-auto p-6 md:p-10 animate-fade-in">
+        <div class="mb-10 text-center">
+            <h2 class="text-3xl font-tech font-bold text-white mb-2">DAILY CASE REPORT</h2>
+            <p id="active-ps-name" class="text-police-400 font-bold text-[10px] tracking-wider uppercase opacity-70"></p>
+        </div>
+
+        <div class="flex justify-center flex-wrap gap-2 mb-10 overflow-x-auto pb-4">
+            <button onclick="switchTab(1)" id="t-1" class="px-6 py-3 rounded-xl glass-card text-[10px] font-bold tracking-wider uppercase border-police-500 text-police-300">Staff Status</button>
+            <button onclick="switchTab(2)" id="t-2" class="px-6 py-3 rounded-xl glass-card text-[10px] font-bold tracking-wider uppercase border-white/5 opacity-50">Naka Bandi</button>
+            <button onclick="switchTab(3)" id="t-3" class="px-6 py-3 rounded-xl glass-card text-[10px] font-bold tracking-wider uppercase border-white/5 opacity-50">Patrolling</button>
+            <button onclick="switchTab(4)" id="t-4" class="px-6 py-3 rounded-xl glass-card text-[10px] font-bold tracking-wider uppercase border-white/5 opacity-50">CCTNS REG</button>
+            <button onclick="switchTab(5)" id="t-5" class="px-6 py-3 rounded-xl glass-card text-[10px] font-bold tracking-wider uppercase border-white/5 opacity-50">Mobile Tracking</button>
+        </div>
+
+        <div class="glass-card p-8 rounded-[2rem] border-white/10">
+            <form id="dcr-form" class="space-y-10">
+                <!-- Section 1: Staff Status -->
+                <div id="sec-1" class="tab-content transition-all duration-500">
+                    <h3 class="text-sm font-bold text-police-300 uppercase tracking-wider mb-8 border-l-4 border-police-500 pl-4">Staff Strength Deployment</h3>
+                    <div class="space-y-8">
+                        <div>
+                            <div class="flex justify-between items-end mb-4">
+                                <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider">Officers On Field</label>
+                                <span class="text-[10px] text-police-500 font-bold bg-police-500/10 px-2 py-1 rounded">Total: <span id="total_officers">0</span></span>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">PI</label><input type="number" id="off_pi" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">API</label><input type="number" id="off_api" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">WAPI</label><input type="number" id="off_wapi" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">PSI</label><input type="number" id="off_psi" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">WPSI</label><input type="number" id="off_wpsi" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                            </div>
+                            <!-- Hidden total for form submission compatibility if needed -->
+                            <input type="hidden" id="officers_on_duty" value="0">
+                        </div>
+                        
+                        <div class="pt-4 border-t border-white/5">
+                            <div class="flex justify-between items-end mb-4">
+                                <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider">Constables On Field</label>
+                                <span class="text-[10px] text-police-500 font-bold bg-police-500/10 px-2 py-1 rounded">Total: <span id="total_personnel">0</span></span>
+                            </div>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">ASI</label><input type="number" id="per_asi" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">WASI</label><input type="number" id="per_wasi" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">HC</label><input type="number" id="per_hc" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">WHC</label><input type="number" id="per_whc" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">NPC</label><input type="number" id="per_npc" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">WNPC</label><input type="number" id="per_wnpc" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">PC</label><input type="number" id="per_pc" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                                <div><label class="block text-[8px] text-police-500 uppercase mb-1">WPC</label><input type="number" id="per_wpc" value="0" min="0" oninput="calcTotals()" class="w-full p-3 rounded-xl bg-slate-800/50 border-white/10 text-sm font-bold"></div>
+                            </div>
+                            <input type="hidden" id="personnel_on_duty" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Naka Bandi -->
+                <div id="sec-2" class="tab-content hidden">
+                    <h3 class="text-sm font-bold text-police-300 uppercase tracking-wider mb-8 border-l-4 border-police-500 pl-4">Naka Bandi Ops</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider mb-3">Vehicles Screened</label>
+                            <input type="number" id="nb_vehicles" value="0" min="0" class="w-full p-5 rounded-2xl font-bold bg-slate-800/50 border-white/10">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider mb-3">Action/Penalties</label>
+                            <input type="text" id="nb_action" class="w-full p-5 rounded-2xl font-bold bg-slate-800/50 border-white/10" placeholder="e.g. 5 cases filed">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Patrolling -->
+                <div id="sec-3" class="tab-content hidden">
+                    <h3 class="text-sm font-bold text-police-300 uppercase tracking-wider mb-8 border-l-4 border-police-500 pl-4">Patrolling & Surveillance</h3>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider mb-3">Patrolling Route</label>
+                            <input type="text" id="patrol_route" class="w-full p-5 rounded-2xl font-bold bg-slate-800/50 border-white/10" placeholder="e.g. Main Market, HQ Road">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider mb-3">Incident/Observations</label>
+                            <textarea id="patrol_obs" rows="2" class="w-full p-5 rounded-2xl bg-slate-800/50 border-white/10 text-sm font-medium" placeholder="Describe findings..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: CCTNS REG -->
+                <div id="sec-4" class="tab-content hidden">
+                    <h3 class="text-sm font-bold text-police-300 uppercase tracking-wider mb-8 border-l-4 border-police-500 pl-4">CCTNS Registration</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div>
+                            <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider mb-3">New FIRs</label>
+                            <input type="number" id="cctns_fir" value="0" min="0" class="w-full p-5 rounded-2xl font-bold bg-slate-800/50 border-white/10">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider mb-3">GD Entries</label>
+                            <input type="number" id="cctns_gd" value="0" min="0" class="w-full p-5 rounded-2xl font-bold bg-slate-800/50 border-white/10">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider mb-3">Crime/NC</label>
+                            <input type="number" id="cctns_crime" value="0" min="0" class="w-full p-5 rounded-2xl font-bold bg-slate-800/50 border-white/10">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Mobile Tracking -->
+                <div id="sec-5" class="tab-content hidden">
+                    <h3 class="text-sm font-bold text-police-300 uppercase tracking-wider mb-8 border-l-4 border-police-500 pl-4">Mobile & Electronic Tracking</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider mb-3">IMEI Tracked</label>
+                            <input type="number" id="mobile_imei" value="0" min="0" class="w-full p-5 rounded-2xl font-bold bg-slate-800/50 border-white/10">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-police-400 uppercase tracking-wider mb-3">Success/Recovered</label>
+                            <input type="number" id="mobile_success" value="0" min="0" class="w-full p-5 rounded-2xl font-bold bg-slate-800/50 border-white/10">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer with Actions -->
+                <div class="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="flex items-center space-x-2 text-police-500 text-[10px] font-bold tracking-wider uppercase italic">
+                        <i class="fas fa-clock"></i>
+                        <span>Last auto-save: 14:12</span>
+                    </div>
+                    <button type="button" onclick="submitDCR()" class="px-12 py-5 bg-police-500 hover:bg-police-600 text-white rounded-2xl font-bold tracking-wider text-xs transition-all flex items-center shadow-xl shadow-police-500/20 active:scale-95 uppercase">
+                        <span>Transmit Report</span>
+                        <i class="fas fa-satellite-dish ml-3 opacity-50"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        let currentUser = null;
+        let units = [];
+        const BACKEND_PORT = '8001';
+        const BASE_URL = window.location.protocol === 'file:' ? `http://localhost:${BACKEND_PORT}` : (window.location.port === BACKEND_PORT ? '' : `${window.location.protocol}//${window.location.hostname}:${BACKEND_PORT}`);
+
+        window.onload = async () => {
+            const select = document.getElementById('station-list');
+            try {
+                const response = await fetch(`${BASE_URL}/api/units`);
+                if (!response.ok) throw new Error("Backend Offline");
+                units = await response.json();
+                
+                select.innerHTML = '<option value="" disabled selected>-- SELECT POLICE STATION --</option>';
+                
+                if (!units || units.length === 0) {
+                    select.innerHTML = '<option value="" disabled>No stations found in database</option>';
+                    return;
+                }
+
+                units.sort((a,b) => a.name.localeCompare(b.name)).forEach(u => {
+                    const divisionShort = u.division.includes('(') ? 
+                        u.division.split('(')[1].replace(')', '').trim() : 
+                        u.division.split(' ')[0];
+                    
+                    const opt = document.createElement('option');
+                    opt.value = u.id;
+                    opt.textContent = `${u.name.toUpperCase()} [${divisionShort.toUpperCase()}]`;
+                    select.appendChild(opt);
+                });
+            } catch (e) { 
+                console.error("API Connectivity Error:", e);
+                select.innerHTML = '<option value="" disabled>Error loading stations. Please ensure server is running.</option>';
+            }
+        }
+
+        function toggleLoginInputs() {
+            const type = document.getElementById('user-type').value;
+            document.getElementById('ps-selection').classList.toggle('hidden', type === 'admin');
+        }
+
+        async function performAccess() {
+            const type = document.getElementById('user-type').value;
+            const unitId = document.getElementById('station-list').value;
+            const unit = units.find(u => u.id == unitId);
+
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('nav-user').classList.remove('hidden');
+            
+            if(type === 'ps') {
+                currentUser = unit;
+                document.getElementById('ps-screen').classList.remove('hidden');
+                document.getElementById('nav-name').innerText = unit.name.toUpperCase();
+                document.getElementById('nav-role').innerText = "STATION COMMAND";
+                document.getElementById('active-ps-name').innerText = `${unit.name} • ${unit.division}`;
+            } else {
+                document.getElementById('admin-screen').classList.remove('hidden');
+                document.getElementById('nav-name').innerText = "SP COMMAND";
+                document.getElementById('nav-role').innerText = "SUPREME AUTHORITY";
+                await initAdminGrid();
+            }
+        }
+
+        function switchTab(idx) {
+            for(let i=1; i<=5; i++) { 
+                const btn = document.getElementById(`t-${i}`);
+                const content = document.getElementById(`sec-${i}`);
+                if(i === idx) {
+                    btn.classList.add('border-police-500', 'text-police-300');
+                    btn.classList.remove('opacity-50', 'border-white/5');
+                    if(content) content.classList.remove('hidden');
+                } else {
+                    btn.classList.remove('border-police-500', 'text-police-300');
+                    btn.classList.add('opacity-50', 'border-white/5');
+                    if(content) content.classList.add('hidden');
+                }
+            }
+        }
+
+        async function initAdminGrid() {
+            try {
+                const response = await fetch(`${BASE_URL}/api/admin/tracker`);
+                const trackerData = await response.json();
+                const grid = document.getElementById('command-grid');
+                grid.innerHTML = '';
+
+                trackerData.forEach(item => {
+                    const card = `
+                        <div class="glass-card p-6 rounded-3xl border border-white/10 hover:border-police-500/40 group transition-all duration-300">
+                            <div class="flex justify-between items-start mb-6">
+                                <span class="text-[9px] font-bold text-police-500 tracking-wider bg-police-500/10 px-2 py-1 rounded-lg uppercase">${item.division}</span>
+                                <div class="status-badge ${item.is_submitted ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-500'} px-3 py-1 text-[8px] font-tech font-bold uppercase tracking-wider">
+                                    ${item.is_submitted ? 'Received' : 'Pending'}
+                                </div>
+                            </div>
+                            <h4 class="text-white font-bold tracking-wide uppercase mb-8 group-hover:text-police-300 transition-colors">${item.station}</h4>
+                            
+                            <div class="flex items-center justify-between mb-6">
+                                <p class="text-[9px] font-bold text-police-400 tracking-wider uppercase">
+                                    ${item.is_submitted ? `<i class="fas fa-check-circle text-emerald-500 mr-2"></i> ${item.last_sync}` : '<i class="fas fa-triangle-exclamation text-amber-500 mr-2"></i> No Data'}
+                                </p>
+                                <span class="text-[10px] text-white/20 font-tech">${new Date().toISOString().split('T')[0]}</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                ${item.is_submitted ? `
+                                <button onclick="viewReportDetails(${item.id})" class="col-span-1 py-3 bg-police-500/20 border border-police-500/30 rounded-xl text-[8px] font-bold uppercase tracking-wider text-police-300 hover:bg-police-500 hover:text-white transition-all">
+                                    <i class="fas fa-eye mr-1"></i> View
+                                </button>
+                                <button onclick="downloadUnitReport(${item.id})" class="col-span-1 py-3 bg-white/5 border border-white/10 rounded-xl text-[8px] font-bold uppercase tracking-wider hover:bg-white/10 transition-all">
+                                    <i class="fas fa-download mr-1"></i> Export
+                                </button>
+                                ` : `
+                                <div class="col-span-2 py-3 bg-red-500/5 border border-red-500/10 rounded-xl text-[8px] font-bold uppercase tracking-wider text-red-500/40 text-center italic">
+                                    Waiting for Sync...
+                                </div>
+                                `}
+                            </div>
+                        </div>
+                    `;
+                    grid.innerHTML += card;
+                });
+            } catch (e) { console.error("Tracking Data Sync Error:", e); }
+        }
+
+        function calcTotals() {
+            const pi = Math.max(0, parseInt(document.getElementById('off_pi').value) || 0);
+            const api = Math.max(0, parseInt(document.getElementById('off_api').value) || 0);
+            const wapi = Math.max(0, parseInt(document.getElementById('off_wapi').value) || 0);
+            const psi = Math.max(0, parseInt(document.getElementById('off_psi').value) || 0);
+            const wpsi = Math.max(0, parseInt(document.getElementById('off_wpsi').value) || 0);
+            const totalOff = pi + api + wapi + psi + wpsi;
+            document.getElementById('total_officers').innerText = totalOff;
+            document.getElementById('officers_on_duty').value = totalOff;
+
+            const asi = Math.max(0, parseInt(document.getElementById('per_asi').value) || 0);
+            const wasi = Math.max(0, parseInt(document.getElementById('per_wasi').value) || 0);
+            const hc = Math.max(0, parseInt(document.getElementById('per_hc').value) || 0);
+            const whc = Math.max(0, parseInt(document.getElementById('per_whc').value) || 0);
+            const npc = Math.max(0, parseInt(document.getElementById('per_npc').value) || 0);
+            const wnpc = Math.max(0, parseInt(document.getElementById('per_wnpc').value) || 0);
+            const pc = Math.max(0, parseInt(document.getElementById('per_pc').value) || 0);
+            const wpc = Math.max(0, parseInt(document.getElementById('per_wpc').value) || 0);
+            const totalPer = asi + wasi + hc + whc + npc + wnpc + pc + wpc;
+            document.getElementById('total_personnel').innerText = totalPer;
+            document.getElementById('personnel_on_duty').value = totalPer;
+        }
+
+        async function submitDCR() {
+            if(!currentUser) return;
+            
+            const payload = {
+                officers_on_duty: Math.max(0, parseInt(document.getElementById('officers_on_duty').value) || 0),
+                personnel_on_duty: Math.max(0, parseInt(document.getElementById('personnel_on_duty').value) || 0),
+                officers_breakdown: {
+                    pi: Math.max(0, parseInt(document.getElementById('off_pi').value) || 0),
+                    api: Math.max(0, parseInt(document.getElementById('off_api').value) || 0),
+                    wapi: Math.max(0, parseInt(document.getElementById('off_wapi').value) || 0),
+                    psi: Math.max(0, parseInt(document.getElementById('off_psi').value) || 0),
+                    wpsi: Math.max(0, parseInt(document.getElementById('off_wpsi').value) || 0)
+                },
+                personnel_breakdown: {
+                    asi: Math.max(0, parseInt(document.getElementById('per_asi').value) || 0),
+                    wasi: Math.max(0, parseInt(document.getElementById('per_wasi').value) || 0),
+                    hc: Math.max(0, parseInt(document.getElementById('per_hc').value) || 0),
+                    whc: Math.max(0, parseInt(document.getElementById('per_whc').value) || 0),
+                    npc: Math.max(0, parseInt(document.getElementById('per_npc').value) || 0),
+                    wnpc: Math.max(0, parseInt(document.getElementById('per_wnpc').value) || 0),
+                    pc: Math.max(0, parseInt(document.getElementById('per_pc').value) || 0),
+                    wpc: Math.max(0, parseInt(document.getElementById('per_wpc').value) || 0)
+                },
+                naka_bandi_stats: {
+                    vehicles_checked: Math.max(0, parseInt(document.getElementById('nb_vehicles').value) || 0),
+                    action_details: document.getElementById('nb_action').value
+                },
+                patrolling_stats: {
+                    route: document.getElementById('patrol_route').value,
+                    findings: document.getElementById('patrol_obs').value
+                },
+                crime_stats: {
+                    new_firs: Math.max(0, parseInt(document.getElementById('cctns_fir').value) || 0),
+                    gd_entries: Math.max(0, parseInt(document.getElementById('cctns_gd').value) || 0),
+                    nc_offences: Math.max(0, parseInt(document.getElementById('cctns_crime').value) || 0)
+                },
+                mobile_tracking_stats: {
+                    imei_tracked: Math.max(0, parseInt(document.getElementById('mobile_imei').value) || 0),
+                    success_recovered: Math.max(0, parseInt(document.getElementById('mobile_success').value) || 0)
+                }
+            };
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/report/submit?unit_id=${currentUser.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if(result.status === "success") {
+                    alert("SECURE TRANSMISSION SUCCESSFUL: Report synced to District command.");
+                    location.reload();
+                }
+            } catch (e) { alert("Transmission Error: Connection to HQ Interrupted."); }
+        }
+
+        async function viewReportDetails(unitId) {
+            try {
+                const response = await fetch(`${BASE_URL}/api/report/details/${unitId}`);
+                if (!response.ok) throw new Error("Failed to fetch intelligence data");
+                const data = await response.json();
+                
+                document.getElementById('modal-station-name').innerText = data.unit_name.toUpperCase();
+                document.getElementById('modal-meta').innerText = `${data.division} • SYNCED AT ${new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                
+                const content = document.getElementById('modal-content');
+                content.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-6">
+                            <div class="bg-white/5 p-6 rounded-2xl border border-white/5 shadow-sm">
+                                <h4 class="text-xs font-bold text-police-300 uppercase tracking-wider mb-4 flex items-center">
+                                    <i class="fas fa-users-line mr-2"></i> Personnel Status
+                                </h4>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">Officers</p>
+                                        <p class="text-3xl font-sans font-bold text-white tracking-tight">${data.officers_on_duty}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">Personnel</p>
+                                        <p class="text-3xl font-sans font-bold text-white tracking-tight">${data.personnel_on_duty}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white/5 p-6 rounded-2xl border border-white/5 shadow-sm">
+                                <h4 class="text-xs font-bold text-police-300 uppercase tracking-wider mb-4 flex items-center">
+                                    <i class="fas fa-road-barrier mr-2"></i> Naka Bandi
+                                </h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">Vehicles Checked</p>
+                                        <p class="text-2xl font-sans font-bold text-white tracking-tight">${data.naka_bandi_stats?.vehicles_checked || 0}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">Operations Summary</p>
+                                        <p class="text-sm font-medium text-white/90 leading-relaxed">${data.naka_bandi_stats?.action_details || 'No action reported'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="bg-white/5 p-6 rounded-2xl border border-white/5 shadow-sm">
+                                <h4 class="text-xs font-bold text-police-300 uppercase tracking-wider mb-4 flex items-center">
+                                    <i class="fas fa-map-location-dot mr-2"></i> Patrolling
+                                </h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">Assigned Route</p>
+                                        <p class="text-sm font-medium text-white leading-relaxed">${data.patrolling_stats?.route || 'Standard Patrol'}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">Intelligence Gathered</p>
+                                        <p class="text-sm font-medium text-white/90 leading-relaxed">${data.patrolling_stats?.findings || 'Routine patrolling'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white/5 p-6 rounded-2xl border border-white/5 shadow-sm">
+                                <h4 class="text-xs font-bold text-police-300 uppercase tracking-wider mb-4 flex items-center">
+                                    <i class="fas fa-file-invoice mr-2"></i> CCTNS / Crime
+                                </h4>
+                                <div class="grid grid-cols-3 gap-4">
+                                    <div>
+                                        <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">FIRs</p>
+                                        <p class="text-2xl font-sans font-bold text-white tracking-tight">${data.crime_stats?.new_firs || 0}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">GD Entries</p>
+                                        <p class="text-2xl font-sans font-bold text-white tracking-tight">${data.crime_stats?.gd_entries || 0}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">NC</p>
+                                        <p class="text-2xl font-sans font-bold text-white tracking-tight">${data.crime_stats?.nc_offences || 0}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-police-600/10 to-police-800/10 p-6 rounded-2xl border border-police-500/20 shadow-sm mt-8">
+                        <h4 class="text-xs font-bold text-police-300 uppercase tracking-wider mb-4 flex items-center">
+                            <i class="fas fa-mobile-screen mr-2"></i> Electronic Surveillance (IMEI)
+                        </h4>
+                        <div class="grid grid-cols-2 gap-8">
+                            <div>
+                                <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">IMEI Processed</p>
+                                <p class="text-3xl font-sans font-bold text-emerald-400 tracking-tight">${data.mobile_tracking_stats?.imei_tracked || 0}</p>
+                            </div>
+                            <div>
+                                <p class="text-[9px] text-police-400/80 font-bold uppercase tracking-wider mb-1">Successful Traces</p>
+                                <p class="text-3xl font-sans font-bold text-police-400 tracking-tight">${data.mobile_tracking_stats?.success_recovered || 0}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    ${data.remarks ? `
+                    <div class="bg-white/5 p-6 rounded-2xl border border-white/5">
+                        <h4 class="text-xs font-bold text-police-300 uppercase tracking-wider mb-4">Commander's Remarks</h4>
+                        <p class="text-sm text-white/70 italic">"${data.remarks}"</p>
+                    </div>
+                    ` : ''}
+                `;
+                
+                document.getElementById('report-modal').classList.remove('hidden');
+            } catch (e) {
+                alert("Intelligence Retrieval Error: Report may have been archived or corrupted.");
+                console.error(e);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('report-modal').classList.add('hidden');
+        }
+
+        async function downloadAllReports() {
+            window.location.href = `${BASE_URL}/api/export/all`;
+        }
+
+        async function downloadUnitReport(unitId) {
+            window.location.href = `${BASE_URL}/api/export/unit/${unitId}`;
+        }
+    </script>
+</body>
+</html>
