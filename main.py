@@ -29,6 +29,17 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False)
 # Initialize Tables (Automated for this fresh start)
 m.Base.metadata.create_all(bind=engine)
 
+# Auto-seed if empty (fixes blank stations on Render deployments)
+db = SessionLocal()
+try:
+    if db.query(m.Unit).count() == 0:
+        import seed
+        # seed.py drops and recreates tables, then seeds police stations.
+        # This is safe to run since we just ensured the table is completely empty.
+        seed.seed_database()
+finally:
+    db.close()
+
 # --- FastAPI App ---
 app = FastAPI(
     title="Akola Police DCR Portal",
