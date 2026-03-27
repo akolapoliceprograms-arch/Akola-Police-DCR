@@ -68,6 +68,16 @@ async def read_index():
     """Serves the main command center interface."""
     return FileResponse('index.html')
 
+@app.get("/api/seed", tags=["Setup"])
+def manual_seed():
+    """Manually triggers the official police station seeding algorithm."""
+    try:
+        import seed
+        seed.seed_database()
+        return {"status": "success", "message": "24 Police Stations explicitly seeded to active database."}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.get("/api/units", tags=["Metadata"])
 def list_units(db: Session = Depends(get_db)):
     """Retrieve all operational police units/stations."""
