@@ -13,16 +13,12 @@ import io
 
 # --- Database Setup ---
 import os
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./dpr_portal.db")
+# Use Supabase Lifetime Free Database directly
+# (Overrides Render's expiring database variable completely)
+# Password is URL encoded because it contains '@' and '#'
+DATABASE_URL = "postgresql://postgres.djnebvjenrjhaksrywbq:Akola%40123%23%23123@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres"
 
-# Render uses 'postgres://' in their URLs but SQLAlchemy requires 'postgresql://'
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-if DATABASE_URL.startswith("sqlite"):
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-else:
-    engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False)
 
@@ -40,12 +36,18 @@ try:
 finally:
     db.close()
 
+from fastapi.staticfiles import StaticFiles
+
 # --- FastAPI App ---
 app = FastAPI(
     title="Akola Police DCR Portal",
-    description="High-Security Operational Monitoring System",
-    version="2.0.0"
+    description="Internal portal for Daily Crime Report management.",
+    version="1.0.0"
 )
+
+# Ensure static folder exists locally for custom images
+os.makedirs("static", exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Optional: Enable CORS if testing from different origin
 app.add_middleware(
@@ -122,9 +124,7 @@ def submit_report(
         )
         db.add(new_report)
     
-    # Auto-cleanup: Delete reports older than 30 days
-    thirty_days_ago = today - timedelta(days=30)
-    db.query(m.DailyReport).filter(m.DailyReport.report_date < thirty_days_ago).delete()
+    # Auto-cleanup logic has been removed as per user request to not delete old data after 30 days.
     
     db.commit()
     return {"status": "success", "message": "DCR Transmitted Successfully"}
